@@ -6,3 +6,4 @@ results.zip
 __pycache__/
 *.pyc
 *.md
+!README.md
