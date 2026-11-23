@@ -1,0 +1,37 @@
+---
+# [TAMBAHAN REPLIKASI] containerd dari paket docker.io memakai config default
+# (cgroupfs, plugin CRI kadang dinonaktifkan). kubelet 1.30 memakai cgroup systemd,
+# jadi containerd disamakan. Juga menarik image uji penulis lebih dulu agar Job tes
+# tidak terlambat mulai (penulis hanya memberi jeda tetap 40 detik per tes).
+- name: Konfigurasi containerd untuk kubeadm
+  hosts: all
+  tasks:
+    - name: Direktori config containerd
+      file:
+        path: /etc/containerd
+        state: directory
+
+    - name: Buat config default containerd
+      shell: "containerd config default > /etc/containerd/config.toml"
+
+    - name: Aktifkan SystemdCgroup
+      replace:
+        path: /etc/containerd/config.toml
+        regexp: 'SystemdCgroup = false'
+        replace: 'SystemdCgroup = true'
+
+    - name: Restart containerd dan kubelet
+      systemd:
+        name: "{{ item }}"
+        state: restarted
+        daemon_reload: true
+      with_items:
+        - containerd
+        - kubelet
+
+    - name: Tarik image uji penulis ({{ test_image }})
+      shell: "ctr -n k8s.io images pull docker.io/{{ test_image }}"
+      register: pull
+      retries: 3
+      delay: 10
+      until: pull.rc == 0

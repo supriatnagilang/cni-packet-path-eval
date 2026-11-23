@@ -1,0 +1,26 @@
+## MTU eth0 pod klien
+1500
+## Antarmuka tunnel di host
+(tidak ada)
+## ip route host
+default via 10.97.0.1 dev eth0 proto dhcp src 10.97.0.60 metric 100 
+10.97.0.0/24 dev eth0 proto kernel scope link src 10.97.0.60 metric 100 
+10.97.0.1 dev eth0 proto dhcp scope link src 10.97.0.60 metric 100 
+10.244.22.192 dev calic7f92caceb3 scope link 
+blackhole 10.244.22.192/26 proto bird 
+10.244.22.193 dev calid91a487962b scope link 
+10.244.22.194 dev calid7b446c6c1a scope link 
+10.244.22.195 dev calif6d43f9193c scope link 
+10.244.22.196 dev calib7652ccb483 scope link 
+10.244.22.197 dev calie0dd84ed93a scope link 
+10.244.151.64/26 via 10.97.0.17 dev eth0 proto bird 
+172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown 
+## kube-proxy DaemonSet
+kube-proxy   2     2     2     2     2     kubernetes.io/os=linux   99s
+## Jumlah rantai KUBE-SVC iptables
+10
+## Calico IPPool
+default-ipv4-ippool ipipMode= vxlanMode=
+# VERIFIKASI: TIDAK SESUAI
+IPPool Calico masih memakai enkapsulasi
+# VERIFIKASI ULANG (20 Nov 2026, aturan diperbaiki: antarmuka tunnel + rute pod; Cilium 1.15 tidak mencetak 'Routing: Network'): SESUAI (calico-noencap)

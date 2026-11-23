@@ -1,0 +1,45 @@
+[WARNING]: Invalid characters were found in group names but not replaced, use
+-vvvv to see details
+
+PLAY [Reset node Kubernetes] ***************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [doktnet01]
+ok: [doktnet02]
+
+TASK [kubeadm reset] ***********************************************************
+changed: [doktnet02]
+changed: [doktnet01]
+
+TASK [Hapus konfigurasi dan state CNI] *****************************************
+changed: [doktnet02]
+changed: [doktnet01]
+
+TASK [Kembalikan profil tuned dan buang sysctl uji] ****************************
+changed: [doktnet02]
+changed: [doktnet01]
+
+TASK [Reboot (membuang antarmuka vxlan/geneve dan program eBPF yang tersisa)] ***
+changed: [doktnet02]
+changed: [doktnet01]
+
+PLAY [Tunggu container runtime siap] *******************************************
+
+TASK [Pastikan containerd dan kubelet aktif] ***********************************
+ok: [doktnet02] => (item=containerd)
+ok: [doktnet01] => (item=containerd)
+ok: [doktnet02] => (item=kubelet)
+ok: [doktnet01] => (item=kubelet)
+
+TASK [Tunggu socket containerd] ************************************************
+ok: [doktnet01]
+ok: [doktnet02]
+
+TASK [Tunggu CRI menjawab] *****************************************************
+ok: [doktnet01]
+ok: [doktnet02]
+
+PLAY RECAP *********************************************************************
+doktnet01                  : ok=8    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+doktnet02                  : ok=8    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+

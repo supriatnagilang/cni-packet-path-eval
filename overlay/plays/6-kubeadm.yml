@@ -1,0 +1,23 @@
+---
+# [DIUBAH REPLIKASI] Versi penulis:
+#   kubeadm init phase kubelet-start
+#   kubeadm init --pod-network-cidr=10.244.0.0/16
+# Perubahan: (1) fase kubelet-start terpisah dihapus karena membuat preflight
+# "Port-10250 is in use" gagal; (2) --apiserver-advertise-address dipaksa ke IP SSH
+# node agar kubeconfig bisa dipakai controller; (3) tidak dijalankan ulang jika
+# cluster sudah ada. Pod CIDR tetap sama dengan penulis.
+# [MODIFIKASI] (4) untuk cni=cilium-native-kpr, addon kube-proxy dilewati karena
+# Service ditangani eBPF Cilium (kube-proxy replacement). Varian lain tidak berubah.
+# Dipanggil dengan: -e cni=<varian> (scripts/07-cluster.sh).
+- import_playbook: wait-runtime.yml
+
+- name: Initialize kubernetes cluster
+  hosts: k8s-control-nodes
+  tasks:
+    - name: Kubeadm init
+      shell: >
+        kubeadm init --pod-network-cidr={{ pod_cidr }}
+        --apiserver-advertise-address={{ ansible_ssh_host }}
+        {{ '--skip-phases=addon/kube-proxy' if (cni | default('')) == 'cilium-native-kpr' else '' }}
+      args:
+        creates: /etc/kubernetes/admin.conf

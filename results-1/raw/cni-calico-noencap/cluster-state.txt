@@ -1,0 +1,38 @@
+NAME        STATUS   ROLES                  AGE   VERSION    INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
+doktnet01   Ready    control-plane,master   90s   v1.30.14   10.97.0.60    <none>        Ubuntu 24.04.5 LTS   6.8.0-149-generic   containerd://2.2.1
+doktnet02   Ready    worker                 72s   v1.30.14   10.97.0.17    <none>        Ubuntu 24.04.5 LTS   6.8.0-149-generic   containerd://2.2.1
+
+NAMESPACE          NAME                                       READY   STATUS              RESTARTS   AGE   IP              NODE        NOMINATED NODE   READINESS GATES
+calico-apiserver   calico-apiserver-864b8f7598-4vr7b          0/1     ContainerCreating   0          1s    <none>          doktnet01   <none>           <none>
+calico-apiserver   calico-apiserver-864b8f7598-phnv2          0/1     ContainerCreating   0          1s    <none>          doktnet02   <none>           <none>
+calico-system      calico-kube-controllers-8689cc7bdd-x5r8j   1/1     Running             0          50s   10.244.22.192   doktnet01   <none>           <none>
+calico-system      calico-node-hgxtw                          1/1     Running             0          48s   10.97.0.60      doktnet01   <none>           <none>
+calico-system      calico-node-z4vbs                          1/1     Running             0          49s   10.97.0.17      doktnet02   <none>           <none>
+calico-system      calico-typha-865d8c486b-l8lkh              1/1     Running             0          51s   10.97.0.17      doktnet02   <none>           <none>
+calico-system      csi-node-driver-s4g8r                      2/2     Running             0          50s   10.244.151.64   doktnet02   <none>           <none>
+calico-system      csi-node-driver-xgrrl                      2/2     Running             0          50s   10.244.22.194   doktnet01   <none>           <none>
+kube-system        coredns-55cb58b774-qptvj                   1/1     Running             0          77s   10.244.22.195   doktnet01   <none>           <none>
+kube-system        coredns-55cb58b774-wn9q6                   1/1     Running             0          77s   10.244.22.193   doktnet01   <none>           <none>
+kube-system        etcd-doktnet01                             1/1     Running             24         90s   10.97.0.60      doktnet01   <none>           <none>
+kube-system        kube-apiserver-doktnet01                   1/1     Running             24         90s   10.97.0.60      doktnet01   <none>           <none>
+kube-system        kube-controller-manager-doktnet01          1/1     Running             24         90s   10.97.0.60      doktnet01   <none>           <none>
+kube-system        kube-proxy-f4m5t                           1/1     Running             0          72s   10.97.0.17      doktnet02   <none>           <none>
+kube-system        kube-proxy-zpsf9                           1/1     Running             0          77s   10.97.0.60      doktnet01   <none>           <none>
+kube-system        kube-scheduler-doktnet01                   1/1     Running             24         90s   10.97.0.60      doktnet01   <none>           <none>
+tigera-operator    tigera-operator-76ff79f7fd-927lk           1/1     Running             0          56s   10.97.0.17      doktnet02   <none>           <none>
+
+WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/ubuntu/.kube/config
+WARNING: Kubernetes configuration file is world-readable. This is insecure. Location: /home/ubuntu/.kube/config
+NAME  	NAMESPACE      	REVISION	UPDATED                                	STATUS  	CHART                  	APP VERSION
+calico	tigera-operator	1       	2026-11-20 15:48:19.813797934 +0700 WIB	deployed	tigera-operator-v3.28.0	v3.28.0    
+
+default via 10.97.0.1 dev eth0 proto dhcp src 10.97.0.60 metric 100 
+10.97.0.0/24 dev eth0 proto kernel scope link src 10.97.0.60 metric 100 
+10.97.0.1 dev eth0 proto dhcp scope link src 10.97.0.60 metric 100 
+10.244.22.192 dev calic7f92caceb3 scope link 
+blackhole 10.244.22.192/26 proto bird 
+10.244.22.193 dev calid91a487962b scope link 
+10.244.22.194 dev calid7b446c6c1a scope link 
+10.244.22.195 dev calif6d43f9193c scope link 
+10.244.151.64/26 via 10.97.0.17 dev eth0 proto bird 
+172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown 

@@ -1,0 +1,75 @@
+2026-11-18T07:43:53Z
+# controller
+Linux gkmunjani 5.4.0-216-generic #236-Ubuntu SMP Fri Apr 11 19:53:21 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+ansible [core 2.17.14]
+Python 3.12.16
+# upstream commit
+b0e55c4b248a9e5a02f0024937545d62f32031a7
+# config.env
+# =============================================================================
+# Replikasi Dakić et al. (2024), Electronics 13(19):3972
+# Kode penulis: upstream/ (https://github.com/vEddYcro/cni-performance-testing, commit b0e55c4)
+# Semua skrip di scripts/ membaca file ini. Ubah nilai di sini, bukan di skrip.
+# Variabel bisa ditimpa sementara dari baris perintah, misalnya:
+#   OPTIMIZATIONS="1-default_settings" ./scripts/04-run-cni.sh flannel
+# =============================================================================
+
+# Nilai pribadi (IP, user, NIC) boleh ditulis di config.local.env agar file ini tetap
+# umum. vm/multipass-up.sh membuatnya otomatis.
+[ -f "$(dirname "${BASH_SOURCE[0]}")/config.local.env" ] && source "$(dirname "${BASH_SOURCE[0]}")/config.local.env"
+
+# ----- Node (sama seperti paper: 2 server) ------------------------------------
+# Paper: doktnet01 = control-plane + KLIEN, doktnet02 = worker + SERVER.
+# Nama host node AKAN DIGANTI menjadi doktnet01/doktnet02 agar kode penulis
+# (nodeSelector, ansible_hostname) berjalan tanpa banyak diubah.
+CLIENT_IP="${CLIENT_IP:-192.168.1.11}"      # IP SSH node 1 (doktnet01)
+SERVER_IP="${SERVER_IP:-192.168.1.12}"      # IP SSH node 2 (doktnet02)
+SSH_USER="${SSH_USER:-ubuntu}"              # user dengan sudo tanpa password
+SSH_KEY="${SSH_KEY:-$HOME/.ssh/id_ed25519}"
+
+# Nama NIC yang dipakai untuk tes di KEDUA node (cek dengan: ip -br link).
+# Paper: eno2 (1 GbE), ens2f0/ens1f0 (10 GbE). Multipass: biasanya ens3.
+TEST_NIC="${TEST_NIC:-eno1}"
+
+# ----- Alamat tujuan tes -------------------------------------------------------
+# false (disarankan): tes langsung ke IP SERVER_IP, netplan tidak disentuh.
+# true  (seperti paper): tambahkan IP 172.16.21.{1,2}/24 di TEST_NIC lewat netplan
+#        dan arahkan tes ke 172.16.21.2. Hanya jika kedua node satu segmen L2.
+USE_TEST_SUBNET="${USE_TEST_SUBNET:-false}"
+
+# Label konfigurasi jaringan untuk hasil. Pakai template "local" milik penulis
+# (satu NIC di kedua node). Sebutkan kecepatan link sebenarnya di laporan.
+TEST_CONFIGURATION="local"
+LINK_LABEL="${LINK_LABEL:-1GbE}"            # hanya untuk dokumentasi/grafik
+
+# ----- Matriks eksperimen ------------------------------------------------------
+# Paper: 4 CNI + OS (tanpa Kubernetes) sebagai baseline.
+CNIS="${CNIS:-antrea calico cilium flannel}"
+
+# Paper: 8 tingkat optimasi. Semua = ±7–8 jam PER CNI (lihat README).
+# Subset cepat yang disarankan: 1-default_settings 2-kernel_optimizations 8-tuned_network_throughput
+OPTIMIZATIONS="${OPTIMIZATIONS:-1-default_settings 2-kernel_optimizations 3-nic_optimizations 4-tuned_acc_performance 5-tuned_hpc_compute 6-tuned_latency_performance 7-tuned_network_latency 8-tuned_network_throughput}"
+
+# MTU 9000 butuh jumbo frame di switch/bridge. Jika tidak didukung, biarkan false.
+TEST_JUMBO="${TEST_JUMBO:-false}"
+
+# Reboot node setelah tiap optimasi. Cleanup penulis tidak mengembalikan nilai
+# sysctl/tuned yang sedang aktif, jadi tanpa reboot efeknya bocor ke optimasi berikutnya.
+REBOOT_BETWEEN_OPTIMIZATIONS="${REBOOT_BETWEEN_OPTIMIZATIONS:-true}"
+
+# ----- Versi (dipin; paper tidak mencantumkan semuanya) -------------------------
+K8S_MINOR="1.30"                 # dari plays/2-packages.yml penulis
+ANTREA_VERSION="2.0.0"           # cni-helm.txt: antctl v2.0.0
+CILIUM_VERSION="1.15.6"          # cni-helm.txt
+CILIUM_TUNNEL="vxlan"            # cni-helm.txt juga mencoba geneve
+FLANNEL_VERSION="v0.25.4"        # chart tidak dipin di cni-helm.txt; rilis Juni 2024
+CALICO_VERSION="v3.28.0"         # cni-helm.txt
+POD_CIDR="10.244.0.0/16"         # plays/6-kubeadm.yml penulis
+TEST_IMAGE="matejbasic/cni-performance-testing:1.0"
+
+# ----- Ekstensi / usulan pengembangan (scripts/06-run-ekstensi.sh) ------------
+# Jalur diukur berlapis dengan metodologi yang diperbaiki (UDP -b 0, latensi p50/p99,
+# CPU kedua node, energi RAPL bila mesin fisik).
+EXT_LAYERS="${EXT_LAYERS:-L0-host L1-hostnet-pod L2-pod-ip L3-clusterip L4-nodeport}"
+EXT_ITERATIONS="${EXT_ITERATIONS:-5}"
+EXT_DURATION="${EXT_DURATION:-30}"

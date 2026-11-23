@@ -1,0 +1,182 @@
+[WARNING]: Invalid characters were found in group names but not replaced, use
+-vvvv to see details
+
+PLAY [Tunggu container runtime siap] *******************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [doktnet02]
+ok: [doktnet01]
+
+TASK [Pastikan containerd dan kubelet aktif] ***********************************
+ok: [doktnet01] => (item=containerd)
+ok: [doktnet02] => (item=containerd)
+ok: [doktnet02] => (item=kubelet)
+ok: [doktnet01] => (item=kubelet)
+
+TASK [Tunggu socket containerd] ************************************************
+ok: [doktnet02]
+ok: [doktnet01]
+
+TASK [Tunggu CRI menjawab] *****************************************************
+ok: [doktnet01]
+ok: [doktnet02]
+
+PLAY [Initialize kubernetes cluster] *******************************************
+
+TASK [Kubeadm init] ************************************************************
+changed: [doktnet01]
+
+PLAY RECAP *********************************************************************
+doktnet01                  : ok=5    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+doktnet02                  : ok=4    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+[WARNING]: Invalid characters were found in group names but not replaced, use
+-vvvv to see details
+
+PLAY [Setting up kubeconfig] ***************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [doktnet01]
+
+TASK [Fetch kubeconfig] ********************************************************
+changed: [doktnet01]
+
+PLAY RECAP *********************************************************************
+doktnet01                  : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+[WARNING]: Invalid characters were found in group names but not replaced, use
+-vvvv to see details
+
+PLAY [Get command for joining the cluster] *************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [doktnet01]
+
+TASK [Find all home directories created for users] *****************************
+ok: [doktnet01]
+
+TASK [Create a .kube directory in home folder of each user] ********************
+changed: [doktnet01] => (item={'path': '/home/ubuntu', 'mode': '0750', 'isdir': True, 'ischr': False, 'isblk': False, 'isreg': False, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 4096, 'inode': 262145, 'dev': 2049, 'nlink': 6, 'atime': 1795168547.7887907, 'mtime': 1795168507.8081586, 'ctime': 1795168507.8081586, 'gr_name': 'ubuntu', 'pw_name': 'ubuntu', 'wusr': True, 'rusr': True, 'xusr': True, 'wgrp': False, 'rgrp': True, 'xgrp': True, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False})
+
+TASK [Copy kubeconfig to $HOME/.kube of each user] *****************************
+changed: [doktnet01] => (item={'path': '/home/ubuntu', 'mode': '0750', 'isdir': True, 'ischr': False, 'isblk': False, 'isreg': False, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1000, 'gid': 1000, 'size': 4096, 'inode': 262145, 'dev': 2049, 'nlink': 6, 'atime': 1795168547.7887907, 'mtime': 1795168507.8081586, 'ctime': 1795168507.8081586, 'gr_name': 'ubuntu', 'pw_name': 'ubuntu', 'wusr': True, 'rusr': True, 'xusr': True, 'wgrp': False, 'rgrp': True, 'xgrp': True, 'woth': False, 'roth': False, 'xoth': False, 'isuid': False, 'isgid': False})
+
+TASK [Print join command] ******************************************************
+changed: [doktnet01]
+
+PLAY [Join worker nodes to the cluster] ****************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [doktnet02]
+
+TASK [Save join command] *******************************************************
+changed: [doktnet02]
+
+TASK [Execute join command] ****************************************************
+changed: [doktnet02]
+
+PLAY RECAP *********************************************************************
+doktnet01                  : ok=5    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+doktnet02                  : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+[WARNING]: Invalid characters were found in group names but not replaced, use
+-vvvv to see details
+
+PLAY [Assign node labels] ******************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [doktnet01]
+
+TASK [Assign master label to doktnet01] ****************************************
+changed: [doktnet01]
+
+TASK [Assign worker label to node all nodes] ***********************************
+changed: [doktnet01] => (item=doktnet02)
+
+PLAY RECAP *********************************************************************
+doktnet01                  : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+[WARNING]: Invalid characters were found in group names but not replaced, use
+-vvvv to see details
+
+PLAY [Izinkan pod uji berjalan di node control-plane] **************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [doktnet01]
+
+TASK [Hapus taint control-plane] ***********************************************
+changed: [doktnet01]
+
+PLAY RECAP *********************************************************************
+doktnet01                  : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+[WARNING]: Invalid characters were found in group names but not replaced, use
+-vvvv to see details
+
+PLAY [Pasang Helm dan CNI] *****************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [doktnet01]
+
+TASK [Pasang Helm v3.15.4] *****************************************************
+ok: [doktnet01]
+
+TASK [Antrea] ******************************************************************
+skipping: [doktnet01]
+
+TASK [Calico] ******************************************************************
+skipping: [doktnet01]
+
+TASK [Calico tanpa enkapsulasi (BGP)] ******************************************
+skipping: [doktnet01]
+
+TASK [Cilium] ******************************************************************
+changed: [doktnet01]
+
+TASK [Cilium native routing (kube-proxy tetap)] ********************************
+skipping: [doktnet01]
+
+TASK [Cilium native routing + kube-proxy replacement] **************************
+skipping: [doktnet01]
+
+TASK [Flannel] *****************************************************************
+skipping: [doktnet01]
+
+TASK [Tunggu semua node Ready] *************************************************
+changed: [doktnet01]
+
+TASK [Tunggu semua pod sistem Ready (CNI, CoreDNS)] ****************************
+changed: [doktnet01]
+
+TASK [Simpan keadaan cluster] **************************************************
+changed: [doktnet01]
+
+TASK [Tampilkan keadaan cluster] ***********************************************
+ok: [doktnet01] => {
+    "state.stdout_lines": [
+        "NAME        STATUS   ROLES                  AGE   VERSION    INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME",
+        "doktnet01   Ready    control-plane,master   87s   v1.30.14   10.97.0.60    <none>        Ubuntu 24.04.5 LTS   6.8.0-149-generic   containerd://2.2.1",
+        "doktnet02   Ready    worker                 68s   v1.30.14   10.97.0.17    <none>        Ubuntu 24.04.5 LTS   6.8.0-149-generic   containerd://2.2.1",
+        "",
+        "NAMESPACE     NAME                                READY   STATUS    RESTARTS   AGE   IP           NODE        NOMINATED NODE   READINESS GATES",
+        "kube-system   cilium-htsjq                        1/1     Running   0          57s   10.97.0.17   doktnet02   <none>           <none>",
+        "kube-system   cilium-operator-65496b9554-d8mjv    1/1     Running   0          57s   10.97.0.17   doktnet02   <none>           <none>",
+        "kube-system   cilium-operator-65496b9554-xv7ks    1/1     Running   0          57s   10.97.0.60   doktnet01   <none>           <none>",
+        "kube-system   cilium-tjfmt                        1/1     Running   0          57s   10.97.0.60   doktnet01   <none>           <none>",
+        "kube-system   coredns-55cb58b774-8tj4k            1/1     Running   0          71s   10.0.0.36    doktnet02   <none>           <none>",
+        "kube-system   coredns-55cb58b774-rw6d7            1/1     Running   0          71s   10.0.0.186   doktnet02   <none>           <none>",
+        "kube-system   etcd-doktnet01                      1/1     Running   25         86s   10.97.0.60   doktnet01   <none>           <none>",
+        "kube-system   kube-apiserver-doktnet01            1/1     Running   25         86s   10.97.0.60   doktnet01   <none>           <none>",
+        "kube-system   kube-controller-manager-doktnet01   1/1     Running   25         86s   10.97.0.60   doktnet01   <none>           <none>",
+        "kube-system   kube-proxy-7cl5w                    1/1     Running   0          72s   10.97.0.60   doktnet01   <none>           <none>",
+        "kube-system   kube-proxy-t6sv8                    1/1     Running   0          68s   10.97.0.17   doktnet02   <none>           <none>",
+        "kube-system   kube-scheduler-doktnet01            1/1     Running   25         86s   10.97.0.60   doktnet01   <none>           <none>",
+        "",
+        "NAME  \tNAMESPACE  \tREVISION\tUPDATED                                \tSTATUS  \tCHART        \tAPP VERSION",
+        "cilium\tkube-system\t1       \t2026-11-20 16:56:35.301271084 +0700 WIB\tdeployed\tcilium-1.15.6\t1.15.6     "
+    ]
+}
+
+PLAY RECAP *********************************************************************
+doktnet01                  : ok=7    changed=4    unreachable=0    failed=0    skipped=6    rescued=0    ignored=0   
+

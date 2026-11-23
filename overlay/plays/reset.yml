@@ -1,0 +1,30 @@
+---
+# [TAMBAHAN REPLIKASI] Membersihkan cluster sebelum mengganti CNI.
+# Penulis melakukan "helm uninstall" + "rm /etc/cni/net.d/*" (cni-helm.txt). Di sini
+# dibuat lebih bersih: kubeadm reset + hapus sisa antarmuka/aturan CNI + reboot,
+# sehingga tiap CNI diuji pada node yang sama-sama bersih.
+- name: Reset node Kubernetes
+  hosts: all
+  tasks:
+    - name: kubeadm reset
+      shell: "kubeadm reset -f || true"
+
+    - name: Hapus konfigurasi dan state CNI
+      shell: |
+        rm -rf /etc/cni/net.d/* /var/lib/cni /var/run/cilium /var/lib/calico /run/flannel /var/run/antrea
+        rm -rf /home/*/.kube /root/.kube /home/*/join_command.sh
+        iptables -F; iptables -t nat -F; iptables -t mangle -F; iptables -X
+        ipvsadm --clear 2>/dev/null || true
+      ignore_errors: true
+
+    - name: Kembalikan profil tuned dan buang sysctl uji
+      shell: |
+        rm -f /etc/sysctl.d/90_test.conf
+        tuned-adm profile balanced
+      ignore_errors: true
+
+    - name: Reboot (membuang antarmuka vxlan/geneve dan program eBPF yang tersisa)
+      reboot:
+        reboot_timeout: 900
+
+- import_playbook: wait-runtime.yml

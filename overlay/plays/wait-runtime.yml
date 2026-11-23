@@ -1,0 +1,28 @@
+---
+# [TAMBAHAN REPLIKASI] Dipanggil setelah reboot dan sebelum kubeadm init/join.
+# Modul reboot selesai begitu SSH hidup, padahal containerd/kubelet mungkin belum siap
+# ("containerd.sock: no such file or directory" saat kubeadm init).
+- name: Tunggu container runtime siap
+  hosts: all
+  tasks:
+    - name: Pastikan containerd dan kubelet aktif
+      systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      with_items:
+        - containerd
+        - kubelet
+
+    - name: Tunggu socket containerd
+      wait_for:
+        path: /var/run/containerd/containerd.sock
+        timeout: 180
+
+    - name: Tunggu CRI menjawab
+      shell: "crictl --runtime-endpoint unix:///var/run/containerd/containerd.sock info >/dev/null"
+      register: cri
+      retries: 18
+      delay: 10
+      until: cri.rc == 0
+      changed_when: false

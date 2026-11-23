@@ -1,0 +1,18 @@
+---
+# [TAMBAHAN REPLIKASI] Reboot antar-optimasi. Cleanup penulis menghapus entri sysctl
+# dari file tetapi tidak mengembalikan nilai yang sedang aktif, dan pengaturan
+# ethtool juga tetap aktif. Reboot memastikan tiap optimasi dimulai dari kondisi awal.
+- name: Reboot node
+  hosts: all
+  tasks:
+    - name: Buang sysctl uji dan kembalikan profil tuned
+      shell: |
+        rm -f /etc/sysctl.d/90_test.conf
+        tuned-adm profile balanced
+      ignore_errors: true
+
+    - name: Reboot
+      reboot:
+        reboot_timeout: 900
+
+- import_playbook: wait-runtime.yml

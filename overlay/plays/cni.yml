@@ -1,0 +1,126 @@
+---
+# [TAMBAHAN REPLIKASI] Penulis memasang CNI secara manual dengan perintah Helm di
+# cni-helm.txt. Playbook ini menjalankan perintah yang sama secara otomatis.
+# Pemakaian: ansible-playbook plays/cni.yml -e cni=<antrea|calico|cilium|flannel>
+# [MODIFIKASI] varian arsitektur jalur tambahan: calico-noencap, cilium-native,
+#   cilium-native-kpr (lihat ARSITEKTUR_JALUR.md). flannel-hostgw sudah ada.
+- name: Pasang Helm dan CNI
+  hosts: k8s-control-nodes
+  become: false
+  vars:
+    helm_version: "v3.15.4"
+  tasks:
+    - name: Pasang Helm {{ helm_version }}
+      become: true
+      shell: >
+        curl -fsSL https://get.helm.sh/helm-{{ helm_version }}-linux-amd64.tar.gz | tar xz -C /tmp &&
+        install -m 0755 /tmp/linux-amd64/helm /usr/local/bin/helm
+      args:
+        creates: /usr/local/bin/helm
+
+    # ---- ANTREA (cni-helm.txt: helm install antrea antrea/antrea --namespace kube-system)
+    - name: Antrea
+      shell: |
+        helm repo add antrea https://charts.antrea.io/ --force-update
+        helm upgrade --install antrea antrea/antrea --namespace kube-system --version {{ antrea_version }}
+      when: cni == "antrea"
+
+    # ---- CALICO (cni-helm.txt: tigera-operator v3.28.0)
+    - name: Calico
+      shell: |
+        helm repo add projectcalico https://docs.tigera.io/calico/charts --force-update
+        kubectl create namespace tigera-operator --dry-run=client -o yaml | kubectl apply -f -
+        helm upgrade --install calico projectcalico/tigera-operator --version {{ calico_version }} --namespace tigera-operator
+      when: cni == "calico"
+
+    # ---- [MODIFIKASI A] calico-noencap: IPPool tanpa enkapsulasi; rute pod antar-node
+    #      dipasang bird (BGP full-mesh). Syarat: kedua node satu subnet L2.
+    #      Satu-satunya beda dengan "calico" adalah encapsulation (bawaan: IP-in-IP).
+    - name: Calico tanpa enkapsulasi (BGP)
+      shell: |
+        helm repo add projectcalico https://docs.tigera.io/calico/charts --force-update
+        kubectl create namespace tigera-operator --dry-run=client -o yaml | kubectl apply -f -
+        helm upgrade --install calico projectcalico/tigera-operator --version {{ calico_version }} \
+          --namespace tigera-operator \
+          --set 'installation.calicoNetwork.bgp=Enabled' \
+          --set 'installation.calicoNetwork.ipPools[0].cidr={{ pod_cidr }}' \
+          --set 'installation.calicoNetwork.ipPools[0].encapsulation=None' \
+          --set 'installation.calicoNetwork.ipPools[0].natOutgoing=Enabled'
+      when: cni == "calico-noencap"
+
+    # ---- CILIUM (cni-helm.txt: cilium 1.15.6, tunnelProtocol vxlan atau geneve)
+    - name: Cilium
+      shell: |
+        helm repo add cilium https://helm.cilium.io/ --force-update
+        helm upgrade --install cilium cilium/cilium --version {{ cilium_version }} --namespace kube-system --set tunnelProtocol={{ cilium_tunnel }}
+      when: cni == "cilium"
+
+    # ---- [MODIFIKASI A] cilium-native: routing native (tanpa VXLAN), kube-proxy TETAP
+    #      dipakai, host-routing Legacy. Beda dengan "cilium" hanya enkapsulasi.
+    #      ipam.mode=kubernetes wajib: cluster-pool bawaan (10.0.0.0/8) tumpang-tindih
+    #      dengan IP node 10.x, sehingga rute native rusak.
+    - name: Cilium native routing (kube-proxy tetap)
+      shell: |
+        helm repo add cilium https://helm.cilium.io/ --force-update
+        helm upgrade --install cilium cilium/cilium --version {{ cilium_version }} --namespace kube-system \
+          --set routingMode=native \
+          --set autoDirectNodeRoutes=true \
+          --set ipv4NativeRoutingCIDR={{ pod_cidr }} \
+          --set ipam.mode=kubernetes \
+          --set kubeProxyReplacement=false
+      when: cni == "cilium-native"
+
+    # ---- [MODIFIKASI A+B+C] cilium-native-kpr: routing native + kube-proxy replacement
+    #      eBPF (B) + BPF masquerade, yang mengaktifkan BPF host-routing (C) pada kernel
+    #      >= 5.10. Cluster dibuat TANPA kube-proxy (lihat 6-kubeadm.yml), sehingga
+    #      Cilium harus diberi alamat API server secara langsung.
+    - name: Cilium native routing + kube-proxy replacement
+      shell: |
+        helm repo add cilium https://helm.cilium.io/ --force-update
+        helm upgrade --install cilium cilium/cilium --version {{ cilium_version }} --namespace kube-system \
+          --set routingMode=native \
+          --set autoDirectNodeRoutes=true \
+          --set ipv4NativeRoutingCIDR={{ pod_cidr }} \
+          --set ipam.mode=kubernetes \
+          --set kubeProxyReplacement=true \
+          --set k8sServiceHost={{ ansible_ssh_host }} \
+          --set k8sServicePort=6443 \
+          --set bpf.masquerade=true
+      when: cni == "cilium-native-kpr"
+
+    # ---- FLANNEL (cni-helm.txt memakai podCidr=10.233.64.0/18, tidak cocok dengan
+    #      --pod-network-cidr=10.244.0.0/16 di plays/6-kubeadm.yml; disamakan ke pod_cidr)
+    - name: Flannel
+      shell: |
+        kubectl create ns kube-flannel --dry-run=client -o yaml | kubectl apply -f -
+        kubectl label --overwrite ns kube-flannel pod-security.kubernetes.io/enforce=privileged
+        helm repo add flannel https://flannel-io.github.io/flannel/ --force-update
+        helm upgrade --install flannel --set podCidr="{{ pod_cidr }}" --namespace kube-flannel flannel/flannel --version {{ flannel_version }} \
+          --set flannel.backend={{ 'host-gw' if cni == 'flannel-hostgw' else 'vxlan' }}
+      when: cni in ["flannel", "flannel-hostgw"]
+    # [EKSTENSI] flannel-hostgw: routing langsung antar-node tanpa enkapsulasi VXLAN
+    # (kedua node berada di subnet L2 yang sama, syarat backend host-gw).
+
+    - name: Tunggu semua node Ready
+      shell: "kubectl wait --for=condition=Ready nodes --all --timeout=600s"
+      retries: 3
+      delay: 20
+      register: nodes_ready
+      until: nodes_ready.rc == 0
+
+    - name: Tunggu semua pod sistem Ready (CNI, CoreDNS)
+      shell: |
+        sleep 30
+        kubectl wait --for=condition=Ready pods --all -A --timeout=600s
+      retries: 3
+      delay: 20
+      register: pods_ready
+      until: pods_ready.rc == 0
+
+    - name: Simpan keadaan cluster
+      shell: "kubectl get nodes -o wide; echo; kubectl get pods -A -o wide; echo; helm list -A"
+      register: state
+
+    - name: Tampilkan keadaan cluster
+      debug:
+        var: state.stdout_lines

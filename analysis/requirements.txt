@@ -1,0 +1,5 @@
+ansible==10.7.0
+kubernetes==29.0.0
+pandas>=2.0
+matplotlib>=3.7
+scipy>=1.10

@@ -1,0 +1,5 @@
+# MTU antarmuka pod (penulis mengubah MTU NIC host SETELAH CNI terpasang)
+1500
+# MTU NIC host eth0
+1500
+# Rute pod klien

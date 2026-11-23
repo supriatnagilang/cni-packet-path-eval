@@ -1,0 +1,28 @@
+NAME        STATUS   ROLES                  AGE   VERSION    INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
+doktnet01   Ready    control-plane,master   84s   v1.30.14   10.97.0.60    <none>        Ubuntu 24.04.5 LTS   6.8.0-149-generic   containerd://2.2.1
+doktnet02   Ready    worker                 66s   v1.30.14   10.97.0.17    <none>        Ubuntu 24.04.5 LTS   6.8.0-149-generic   containerd://2.2.1
+
+NAMESPACE     NAME                                READY   STATUS    RESTARTS   AGE   IP             NODE        NOMINATED NODE   READINESS GATES
+kube-system   cilium-operator-6c55b6c567-b2rxq    1/1     Running   0          58s   10.97.0.17     doktnet02   <none>           <none>
+kube-system   cilium-operator-6c55b6c567-czkkn    1/1     Running   0          58s   10.97.0.60     doktnet01   <none>           <none>
+kube-system   cilium-p46ng                        1/1     Running   0          58s   10.97.0.60     doktnet01   <none>           <none>
+kube-system   cilium-q69rr                        1/1     Running   0          58s   10.97.0.17     doktnet02   <none>           <none>
+kube-system   coredns-55cb58b774-8d6jh            1/1     Running   0          70s   10.244.0.95    doktnet01   <none>           <none>
+kube-system   coredns-55cb58b774-qpbkg            1/1     Running   0          70s   10.244.0.235   doktnet01   <none>           <none>
+kube-system   etcd-doktnet01                      1/1     Running   27         84s   10.97.0.60     doktnet01   <none>           <none>
+kube-system   kube-apiserver-doktnet01            1/1     Running   27         84s   10.97.0.60     doktnet01   <none>           <none>
+kube-system   kube-controller-manager-doktnet01   1/1     Running   27         84s   10.97.0.60     doktnet01   <none>           <none>
+kube-system   kube-scheduler-doktnet01            1/1     Running   27         84s   10.97.0.60     doktnet01   <none>           <none>
+
+WARNING: Kubernetes configuration file is group-readable. This is insecure. Location: /home/ubuntu/.kube/config
+WARNING: Kubernetes configuration file is world-readable. This is insecure. Location: /home/ubuntu/.kube/config
+NAME  	NAMESPACE  	REVISION	UPDATED                               	STATUS  	CHART        	APP VERSION
+cilium	kube-system	1       	2026-11-20 19:12:58.25655981 +0700 WIB	deployed	cilium-1.15.6	1.15.6     
+
+default via 10.97.0.1 dev eth0 proto dhcp src 10.97.0.60 metric 100 
+10.97.0.0/24 dev eth0 proto kernel scope link src 10.97.0.60 metric 100 
+10.97.0.1 dev eth0 proto dhcp scope link src 10.97.0.60 metric 100 
+10.244.0.0/24 via 10.244.0.202 dev cilium_host proto kernel src 10.244.0.202 
+10.244.0.202 dev cilium_host proto kernel scope link 
+10.244.1.0/24 via 10.97.0.17 dev eth0 proto kernel 
+172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown 

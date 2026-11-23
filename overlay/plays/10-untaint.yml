@@ -1,0 +1,10 @@
+---
+# [TAMBAHAN REPLIKASI] Job klien penulis memakai nodeSelector doktnet01, yaitu node
+# control-plane. Tanpa menghapus taint control-plane, Job itu Pending selamanya.
+# Kode penulis tidak melakukannya, jadi kemungkinan dilakukan manual di testbed mereka.
+- name: Izinkan pod uji berjalan di node control-plane
+  hosts: k8s-control-nodes
+  become: false
+  tasks:
+    - name: Hapus taint control-plane
+      shell: "kubectl taint nodes {{ inventory_hostname }} node-role.kubernetes.io/control-plane:NoSchedule- || true"

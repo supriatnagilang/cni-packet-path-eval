@@ -1,0 +1,173 @@
+## MTU eth0 pod klien
+1500
+## Antarmuka tunnel di host
+cilium_vxlan     UNKNOWN        8e:92:5f:1c:81:52 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+## ip route host
+default via 10.97.0.1 dev eth0 proto dhcp src 10.97.0.60 metric 100 
+10.0.0.0/24 via 10.0.1.148 dev cilium_host proto kernel src 10.0.1.148 mtu 1450 
+10.0.1.0/24 via 10.0.1.148 dev cilium_host proto kernel src 10.0.1.148 
+10.0.1.148 dev cilium_host proto kernel scope link 
+10.97.0.0/24 dev eth0 proto kernel scope link src 10.97.0.60 metric 100 
+10.97.0.1 dev eth0 proto dhcp scope link src 10.97.0.60 metric 100 
+172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown 
+## kube-proxy DaemonSet
+kube-proxy   2     2     2     2     2     kubernetes.io/os=linux   93s
+## Jumlah rantai KUBE-SVC iptables
+9
+## Cilium status
+KVStore:                Ok   Disabled
+Kubernetes:             Ok   1.30 (v1.30.14) [linux/amd64]
+Kubernetes APIs:        ["EndpointSliceOrEndpoint", "cilium/v2::CiliumClusterwideNetworkPolicy", "cilium/v2::CiliumEndpoint", "cilium/v2::CiliumNetworkPolicy", "cilium/v2::CiliumNode", "cilium/v2alpha1::CiliumCIDRGroup", "core/v1::Namespace", "core/v1::Pods", "core/v1::Service", "networking.k8s.io/v1::NetworkPolicy"]
+KubeProxyReplacement:   False   [eth0   10.97.0.17 fe80::5054:ff:fe2f:644]
+Host firewall:          Disabled
+SRv6:                   Disabled
+CNI Chaining:           none
+CNI Config file:        successfully wrote CNI configuration file to /host/etc/cni/net.d/05-cilium.conflist
+Cilium:                 Ok   1.15.6 (v1.15.6-a09e05e6)
+NodeMonitor:            Listening for events on 4 CPUs with 64x4096 of shared memory
+Cilium health daemon:   Ok   
+IPAM:                   IPv4: 5/254 allocated from 10.0.0.0/24, 
+Allocated addresses:
+  10.0.0.186 (kube-system/coredns-55cb58b774-rw6d7)
+  10.0.0.2 (router)
+  10.0.0.238 (ext/srv)
+  10.0.0.36 (kube-system/coredns-55cb58b774-8tj4k)
+  10.0.0.5 (health)
+IPv4 BIG TCP:           Disabled
+IPv6 BIG TCP:           Disabled
+BandwidthManager:       Disabled
+Host Routing:           Legacy
+Masquerading:           IPTables [IPv4: Enabled, IPv6: Disabled]
+Clock Source for BPF:   ktime
+Controller Status:      34/34 healthy
+  Name                                                  Last success   Last error   Count   Message
+  cilium-health-ep                                      35s ago        never        0       no error   
+  dns-garbage-collector-job                             40s ago        never        0       no error   
+  endpoint-1503-regeneration-recovery                   never          never        0       no error   
+  endpoint-1526-regeneration-recovery                   never          never        0       no error   
+  endpoint-2034-regeneration-recovery                   never          never        0       no error   
+  endpoint-2795-regeneration-recovery                   never          never        0       no error   
+  endpoint-3481-regeneration-recovery                   never          never        0       no error   
+  endpoint-gc                                           40s ago        never        0       no error   
+  ep-bpf-prog-watchdog                                  6s ago         never        0       no error   
+  fqdn-selector-checkpointing                           40s ago        never        0       no error   
+  ipcache-inject-labels                                 36s ago        40s ago      0       no error   
+  k8s-heartbeat                                         11s ago        never        0       no error   
+  link-cache                                            6s ago         never        0       no error   
+  resolve-identity-1503                                 3s ago         never        0       no error   
+  resolve-identity-1526                                 35s ago        never        0       no error   
+  resolve-identity-2034                                 36s ago        never        0       no error   
+  resolve-identity-2795                                 34s ago        never        0       no error   
+  resolve-identity-3481                                 34s ago        never        0       no error   
+  resolve-labels-ext/srv                                3s ago         never        0       no error   
+  resolve-labels-kube-system/coredns-55cb58b774-8tj4k   34s ago        never        0       no error   
+  resolve-labels-kube-system/coredns-55cb58b774-rw6d7   34s ago        never        0       no error   
+  sync-host-ips                                         36s ago        never        0       no error   
+  sync-lb-maps-with-k8s-services                        36s ago        never        0       no error   
+  sync-policymap-1503                                   3s ago         never        0       no error   
+  sync-policymap-1526                                   34s ago        never        0       no error   
+  sync-policymap-2034                                   36s ago        never        0       no error   
+  sync-policymap-2795                                   34s ago        never        0       no error   
+  sync-policymap-3481                                   34s ago        never        0       no error   
+  sync-to-k8s-ciliumendpoint (1503)                     3s ago         never        0       no error   
+  sync-to-k8s-ciliumendpoint (2795)                     4s ago         never        0       no error   
+  sync-to-k8s-ciliumendpoint (3481)                     4s ago         never        0       no error   
+  sync-utime                                            36s ago        never        0       no error   
+  template-dir-watcher                                  never          never        0       no error   
+  write-cni-file                                        40s ago        never        0       no error   
+Proxy Status:            OK, ip 10.0.0.2, 0 redirects active on ports 10000-20000, Envoy: embedded
+Global Identity Range:   min 256, max 65535
+Hubble:                  Ok   Current/Max Flows: 196/4095 (4.79%), Flows/s: 4.31   Metrics: Disabled
+KubeProxyReplacement Details:
+  Status:                 False
+  Socket LB:              Disabled
+  Socket LB Tracing:      Disabled
+  Socket LB Coverage:     Full
+  Devices:                eth0   10.97.0.17 fe80::5054:ff:fe2f:644
+  Session Affinity:       Disabled
+  Graceful Termination:   Enabled
+  NAT46/64 Support:       Disabled
+  Services:
+  - ClusterIP:      Enabled
+  - NodePort:       Disabled 
+  - LoadBalancer:   Disabled 
+  - externalIPs:    Disabled 
+  - HostPort:       Disabled
+BPF Maps:   dynamic sizing: on (ratio: 0.002500)
+  Name                          Size
+  Auth                          524288
+  Non-TCP connection tracking   65536
+  TCP connection tracking       131072
+  Endpoint policy               65535
+  IP cache                      512000
+  IPv4 masquerading agent       16384
+  IPv6 masquerading agent       16384
+  IPv4 fragmentation            8192
+  IPv4 service                  65536
+  IPv6 service                  65536
+  IPv4 service backend          65536
+  IPv6 service backend          65536
+  IPv4 service reverse NAT      65536
+  IPv6 service reverse NAT      65536
+  Metrics                       1024
+  NAT                           131072
+  Neighbor table                131072
+  Global policy                 16384
+  Session affinity              65536
+  Sock reverse NAT              65536
+  Tunnel                        65536
+Encryption:               Disabled        
+Cluster health:           0/2 reachable   (2026-11-20T09:57:05Z)
+  Name                    IP              Node        Endpoints
+  doktnet02 (localhost)   10.97.0.17      reachable   unreachable
+  doktnet01               10.97.0.60      reachable   unreachable
+Modules Health:
+agent
+├── controlplane
+│   ├── node-manager
+│   │   ├── nodes-add                                       [OK] Node adds successful (40s, x2)
+│   │   └── nodes-update                                    [OK] Node updates successful (39s, x2)
+│   ├── bgp-cp
+│   │   └── job-diffstore-events                            [OK] Running (36s, x2)
+│   ├── envoy-proxy
+│   │   └── timer-job-version-check                         [OK] Primed (36s, x1)
+│   ├── endpoint-manager
+│   │   ├── cilium-endpoint-2795 (kube-system/coredns-55cb58b774-rw6d7)
+│   │   │   ├── cep-k8s-sync                                [OK] sync-to-k8s-ciliumendpoint (2795) (34s, x5)
+│   │   │   ├── datapath-regenerate                         [OK] Endpoint regeneration successful (34s, x4)
+│   │   │   └── policymap-sync                              [OK] sync-policymap-2795 (34s, x1)
+│   │   ├── cilium-endpoint-3481 (kube-system/coredns-55cb58b774-8tj4k)
+│   │   │   ├── cep-k8s-sync                                [OK] sync-to-k8s-ciliumendpoint (3481) (34s, x5)
+│   │   │   ├── datapath-regenerate                         [OK] Endpoint regeneration successful (34s, x4)
+│   │   │   └── policymap-sync                              [OK] sync-policymap-3481 (34s, x1)
+│   │   ├── cilium-endpoint-1503 (ext/srv)
+│   │   │   ├── cep-k8s-sync                                [OK] sync-to-k8s-ciliumendpoint (1503) (3s, x2)
+│   │   │   ├── datapath-regenerate                         [OK] Endpoint regeneration successful (3s, x3)
+│   │   │   └── policymap-sync                              [OK] sync-policymap-1503 (3s, x1)
+│   │   ├── endpoint-gc                                     [OK] endpoint-gc (40s, x1)
+│   │   ├── cilium-endpoint-2034 
+│   │   │   ├── datapath-regenerate                         [OK] Endpoint regeneration successful (36s, x5)
+│   │   │   └── policymap-sync                              [OK] sync-policymap-2034 (36s, x1)
+│   │   └── cilium-endpoint-1526 
+│   │       ├── policymap-sync                              [OK] sync-policymap-1526 (34s, x1)
+│   │       └── datapath-regenerate                         [OK] Endpoint regeneration successful (35s, x5)
+│   ├── l2-announcer
+│   │   └── leader-election                                 [OK]  (41s, x1)
+│   ├── auth
+│   │   ├── observer-job-auth request-authentication        [OK] Primed (40s, x1)
+│   │   ├── observer-job-auth gc-identity-events            [OK] OK (7.783µs) [3] (40s, x1)
+│   │   └── timer-job-auth gc-cleanup                       [OK] Primed (40s, x1)
+│   ├── daemon
+│   │   └── ep-bpf-prog-watchdog                            [OK] ep-bpf-prog-watchdog (36s, x2)
+│   └── stale-endpoint-cleanup                              [OK]  (41s, x1)
+└── datapath
+    ├── agent-liveness-updater
+    │   └── timer-job-agent-liveness-updater                [OK] OK (23.502µs) (36s, x1)
+    ├── node-address
+    │   └── job-node-address-update                         [OK] 10.0.0.2 (cilium_host), fe80::287a:4dff:fe73:72b9 (cilium_host) (40s, x1)
+    └── l2-responder
+        └── job-l2-responder-reconciler                     [OK] Running (36s, x1)
+
+# VERIFIKASI: TIDAK SESUAI
+Cilium tidak dalam mode Tunnel
+# VERIFIKASI ULANG (20 Nov 2026, aturan diperbaiki: antarmuka tunnel + rute pod; Cilium 1.15 tidak mencetak 'Routing: Network'): SESUAI (cilium)

@@ -1,0 +1,57 @@
+---
+# [TAMBAHAN REPLIKASI] Tidak ada di kode penulis. Menyiapkan hal yang diasumsikan
+# sudah ada di testbed penulis: nama host, iperf3/netperf/tuned di OS (untuk tes
+# "operating-system" dan server netperf), serta containerd dengan cgroup systemd
+# (tanpa ini kubeadm 1.30 di Ubuntu 22.04/24.04 sering crash-loop).
+- name: Persiapan node untuk kode penulis
+  hosts: all
+  tasks:
+    - name: Set hostname sesuai nama di kode penulis (doktnet01/doktnet02)
+      hostname:
+        name: "{{ inventory_hostname }}"
+
+    - name: Aktifkan repositori universe dan multiverse (netperf ada di multiverse)
+      shell: "add-apt-repository -y universe && add-apt-repository -y multiverse"
+      changed_when: false
+
+    - name: Pasang alat ukur dan utilitas
+      apt:
+        update_cache: yes
+        name:
+          - iperf3
+          - netperf
+          - tuned
+          - ethtool
+          - sysstat
+          - python3-pip
+          - ca-certificates
+          - gnupg
+        state: present
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+
+    - name: Muat br_netfilter dan overlay setiap boot (plays/4-kernel.yml penulis tidak permanen)
+      copy:
+        dest: /etc/modules-load.d/k8s.conf
+        content: "overlay\nbr_netfilter\n"
+
+    - name: Profil tuned awal = balanced (sama dengan profil yang dipulihkan cleanup penulis)
+      shell: "tuned-adm profile balanced"
+
+    - name: Direktori keyring apt
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+
+    - name: Kunci repo Kubernetes (cara baru; apt_key penulis gagal di Ubuntu 24.04)
+      shell: >
+        curl -fsSL https://pkgs.k8s.io/core:/stable:/v{{ k8s_minor }}/deb/Release.key
+        | gpg --dearmor --yes -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+      args:
+        creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+    - name: Repo Kubernetes v{{ k8s_minor }}
+      copy:
+        dest: /etc/apt/sources.list.d/kubernetes.list
+        content: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v{{ k8s_minor }}/deb/ /\n"
